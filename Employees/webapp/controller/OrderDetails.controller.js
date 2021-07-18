@@ -35,8 +35,34 @@ sap.ui.define([
         onClearSignature: function(oEvent){
             var signature = this.byId("signature");
             signature.clear();
-        }
+        },
 
+        factoryOrderDetails: function(listId, oContext) {
+            
+            var contextObject = oContext.getObject();
+            contextObject.Currency = "EUR";//No está en el modelo
+            var unitsInstock = oContext.getModel().getProperty("/Products(" + contextObject.ProductID + ")/UnitsInStock");
+            if (contextObject.Quantity <= unitsInstock) {
+                var objectListItem = new sap.m.ObjectListItem({
+                    title : "{odataNorthwind>/Products(" + contextObject.ProductID + ")/ProductName} ({odataNorthwind>Quantity})",
+                    number : "{parts: [ {path: 'odataNorthwind>UnitPrice'}, {path: 'odataNorthwind>Currency'}], type: 'sap.ui.model.type.Currency', formatOptions: {showMeasure: false}}",
+                    numberUnit : "{odataNorthwind>Currency}",
+                });
+                return objectListItem;
+            }else{
+                var customListItem = new sap.m.CustomListItem({
+                    content: [
+                        new sap.m.Bar({
+                            contentLeft : new sap.m.Label({text: "{odataNorthwind>/Products(" + contextObject.ProductID + ")/ProductName} ({odataNorthwind>Quantity})"}),
+                            contentMiddle : new sap.m.ObjectStatus({ text: "{i18n>avaiableStock} {odataNorthwind>/Products(" + contextObject.ProductID + ")/UnitsInStock}", state: "Error"}),
+                            contentRight : new sap.m.Label({text: "{parts: [ {path: 'odataNorthwind>UnitPrice'}, {path: 'odataNorthwind>Currency'}], type: 'sap.ui.model.type.Currency'}"})
+                        })
+                    ]
+                });
+                return customListItem;
+            }
+            
+        }
 
     });
 });
